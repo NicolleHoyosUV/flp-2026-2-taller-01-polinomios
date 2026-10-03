@@ -18,8 +18,10 @@ de Programación — Universidad del Valle, Sede Tuluá.
 
 | Nombre | Código | Correo institucional |
 |--------|--------|----------------------|
-| {{Nombre 1}} | {{Código 1}} | {{correo1@correounivalle.edu.co}} |
-| {{Nombre 2}} | {{Código 2}} | {{correo2@correounivalle.edu.co}} |
+|Adriana Milena Noscue Dagua | 2477336 |adriana.noscue@correounivalle.edu.co |
+|Sebastian Cucalon Astorquiza| 2477344|sebastian.cucalon@correounivalle.edu.co |
+|Santiago Torres Rojas|2380301 |santiago.torres.rojas@correounivalle.edu.co |
+|Nicolle Camila Hoyos Puin|2380608 |nicolle.hoyos@correounivalle.edu.co |
 
 ---
 
@@ -85,8 +87,7 @@ verificar término por término.}}
 **Especificación.**
 
 - **Tipo:** `coeficiente-de : polinomio × exponente -> coeficiente`
-- **Pre-condición:** $\mathrm{Inv}(p)$ y {{condición sobre el
-  exponente consultado}}.
+- **Pre-condición:** $\mathrm{Inv}(p)$ y $e \in \mathbb{N}$ (el exponente es un entero no negativo).
 - **Post-condición:** $\text{Post}(p, e, r) \equiv {{\ldots}}$ cuando
   el exponente $e$ aparece en $p$; y la función levanta
   `eopl:error` cuando no aparece.
@@ -94,38 +95,50 @@ verificar término por término.}}
 **Código.**
 
 ```racket
-; coeficiente-de : {{contrato}}
-; Propósito: {{...}}
-(define (coeficiente-de p e)
-  ...)
+; coeficiente-de : polinomio x exponente -> exact-number
+; Propósito: Busca y retorna el coeficiente correspondiente al exponente dado en el polinomio.
+(define coeficiente-de-aux
+  (lambda (terms e)
+    (if (sin-terminos? terms)
+        (eopl:error 'coeficiente-de "El polinomio no tiene termino con ese exponente")
+        (let ([actual-coef (concreto-coef (termino->coef (mas-terminos->term terms)))]
+              [actual-expo (concreto-expo (termino->expo (mas-terminos->term terms)))])
+          (cond
+            [(= e actual-expo) actual-coef]
+            [(< e actual-expo) (coeficiente-de-aux (mas-terminos->resto terms) e)]
+            [else (eopl:error 'coeficiente-de "El polinomio no tiene termino con ese exponente")])))))
+
+(define coeficiente-de
+  (lambda (polinomio exponente)
+    (cond
+      [(or (not (integer? exponente)) (< exponente 0))
+       (eopl:error 'coeficiente-de "El exponente debe ser un entero no negativo")]
+      [else
+       (coeficiente-de-aux (poli->terms polinomio) exponente)])))
 ```
 
 **Demostración.**
 
-- **Caso base** ($\text{sin-terminos}$): {{qué hace el programa y por
-  qué eso es exactamente levantar el error.}}
+- **Caso base** ($\text{sin-terminos}$): Cuando $\text{terms} = \text{sin-terminos}()$, no hay términos que evaluar. La condición `(sin-terminos? terms)` se evalúa como verdadera y la función ejecuta inmediatamente `(eopl:error ...)`. Esto cumple de manera exacta con la especificación de retornar error cuando el exponente no se encuentra presente.
+
+ $$
+ P_f(\text{sin-terminos}()) = \text{error} = f(\text{sin-terminos}())
+ $$
+
+- **Caso inductivo** ($\text{mas-terminos}(t, r)$): Sea $t = (c_{\text{act}}, e_{\text{act}})$. Se asume la hipótesis de inducción $P_f(r) = f(r)$ para la cola de términos $r$. Evaluamos tres casos:
+  1. Si $e = e_{\text{act}}$, la función retorna $c_{\text{act}}$, cumpliendo la post-condición.
+  2. Si $e < e_{\text{act}}$, por la H.I. la llamada recursiva `coeficiente-de-aux(r, e)` retorna $f(r)$, buscando correctamente el coeficiente en el resto de la lista.
+  3. Si $e > e_{\text{act}}$, por el orden estrictamente decreciente garantizado por $\mathrm{Inv}(p)$, sabemos que $\forall t_j \in r, e_j < e_{\text{act}} < e$. Es imposible que $e$ se encuentre en $r$, por lo que se corta la búsqueda en $O(1)$ y se levanta `eopl:error` sin necesidad de recorrer el resto de la lista.
 
   $$
-  {{\ldots}}
+  P_f(\text{mas-terminos}(t, r)) = f(\text{mas-terminos}(t, r))
   $$
 
-- **Caso inductivo** ($\text{mas-terminos}(t, r)$): distinga los tres
-  subcasos según la comparación entre el exponente de $t$ y el
-  exponente buscado. {{Uno de ellos usa la hipótesis de inducción
-  sobre $r$; explique por qué el orden estricto del invariante permite
-  cortar la búsqueda sin recorrer el resto de la lista.}}
+- **Levantamiento del error.** Se levanta el error si se alcanza $\text{sin-terminos}()$ o si $e > e_{\text{act}}$, casos donde es matemáticamente imposible que el término exista. Si el término existe, el orden estricto garantiza que la búsqueda se detendrá únicamente en el caso $e = e_{\text{act}}$, retornando el coeficiente sin arrojar error.
 
-  $$
-  {{\ldots}}
-  $$
+- **Terminación.** La medida es el número de términos en la lista, $\mu(\text{terms}) = \vert{}\text{terms}\vert{} \in \mathbb{N}$. En cada llamada recursiva la longitud disminuye estrictamente en $1$ ($\mu(r) = \mu(\text{terms}) - 1$), con cota inferior $0$.
 
-- **Levantamiento del error.** Demuestre que el error se levanta
-  cuando el exponente no está y **solo** en ese caso.
-
-- **Terminación.** {{Medida que decrece estrictamente en cada llamada
-  y cota inferior.}}
-
-**Conclusión:** {{...}}
+**Conclusión:** La función `coeficiente-de` es totalmente correcta con respecto a su especificación.
 
 ---
 
@@ -134,26 +147,51 @@ verificar término por término.}}
 **Especificación.**
 
 - **Tipo:** `eliminar-termino : polinomio × exponente -> polinomio`
-- **Pre-condición:** $\mathrm{Inv}(p)$ y {{...}}.
+- **Pre-condición:** $\mathrm{Inv}(p)$ y $e \in \mathbb{N}$ (entero no negativo).
 - **Post-condición:** el resultado contiene **exactamente** los
   términos de $p$ menos el de exponente $e$. Formalmente:
   $$
-  \text{terminos}(r) = \text{terminos}(p) \setminus \{{\ldots}\}
+  \text{terminos}(r) = \text{terminos}(p) \setminus \{(c, e)\}
   $$
   y la función levanta `eopl:error` si $e$ no aparece en $p$.
 
 **Código.**
 
 ```racket
-(define (eliminar-termino p e)
-  ...)
+(define eliminar-termino-aux
+  (lambda (terms e)
+    (if (sin-terminos? terms)
+        (eopl:error 'eliminar-termino "El polinomio no tiene termino con ese exponente")
+        (let ([actual-expo (concreto-expo (termino->expo (mas-terminos->term terms)))])
+          (cond
+            [(= e actual-expo) (mas-terminos->resto terms)]
+            [(< e actual-expo) (mas-terminos (mas-terminos->term terms)
+                                             (eliminar-termino-aux (mas-terminos->resto terms) e))]
+            [else (eopl:error 'eliminar-termino "El polinomio no tiene termino con ese exponente")])))))
+
+(define eliminar-termino
+  (lambda (polinomio exponente)
+    (cond
+      [(or (not (integer? exponente)) (< exponente 0))
+       (eopl:error 'eliminar-termino "El exponente debe ser un entero no negativo")]
+      [else
+       (poli (poli->var polinomio)
+             (eliminar-termino-aux (poli->terms polinomio) exponente))])))
 ```
 
-**Demostración.** Siga el esquema de 2.1: caso base, caso inductivo
-con hipótesis de inducción, error y terminación. {{Además de la
-igualdad de conjuntos de términos, argumente que el resultado sigue
-cumpliendo $\mathrm{Inv}$: quitar un término no rompe el orden
-estricto ni introduce ceros.}}
+**Demostración.** 
+- **Caso base** ($\text{sin-terminos}$): Si $terms = \text{sin-terminos}()$, no hay términos que eliminar. Se ejecuta directamente `eopl:error`, lo cual satisface la post-condición de fallar cuando $e$ no está en el polinomio.
+
+- **Caso inductivo** ($\text{mas-terminos}(t, r)$): Sea $t = (c_{\text{act}}, e_{\text{act}})$. Asumimos la H.I. de que `eliminar-termino-aux(r, e)` elimina correctamente el término de exponente $e$ de $r$.
+  1. Si $e = e_{\text{act}}$, se retorna $r$, eliminando el primer término. Los términos resultantes corresponden exactamente a $\text{terminos}(p) \setminus \{(c, e)\}$.
+  2. Si $e < e_{\text{act}}$, por H.I. la llamada recursiva elimina el término de $r$ devolviendo $r'$. Se reconstruye la lista como $\text{mas-terminos}(t, r')$.
+  3. Si $e > e_{\text{act}}$, dado $\mathrm{Inv}(p)$, $e$ no está en $r$ y se levanta `eopl:error`.
+
+- **Preservación del invariante:** Quitar un elemento de una secuencia decreciente produce una subsecuencia que conserva el orden estrictamente decreciente ($e_i > e_{i+1}$). Tampoco introduce coeficientes en cero ni altera los coeficientes racionales reducidos. Por ende, el resultado preserva $\mathrm{Inv}(p')$.
+
+- **Terminación:** La medida $\mu(\text{terms}) = \vert{}\text{terms}\vert{}$ se reduce en $1$ en cada llamada sobre el resto de la lista, acotada inferiormente por $0$.
+
+**Conclusión:** La función `eliminar-termino` es correcta y preserva el invariante.
 
 ---
 
