@@ -1,5 +1,6 @@
 #lang eopl
-;Autores: Nombre1 Codigo1, Nombre2 Codigo2
+;Autores: Adriana Milena Noscue Dagua 2477336, Sebastian Cucalon Astorquiza 2477344
+;Santiago Torres Rojas 2380301, Nicolle Camila Hoyos Puin 2380608
 
 ;; Taller 1 — Polinomios dispersos.
 ;; Parte 3: representación con datatypes.
@@ -141,20 +142,22 @@
         (eopl:error 'insertar-termino
                     "El exponente debe ser un entero no negativo")
         (if (not (and (rational? coeficiente)
-                       (exact? coeficiente)))
+                      (exact? coeficiente)))
             (eopl:error 'insertar-termino
                         "El coeficiente debe ser un número racional exacto")
 
-            (cases polinomio p
+            (if (= coeficiente 0)
+                p
+                (cases polinomio p
 
-              (poli (var terms)
+                  (poli (var terms)
 
-                    (poli
-                     var
-                     (insertar-en-terminos
-                      terms
-                      coeficiente
-                      exponente))))))))
+                        (poli
+                         var
+                         (insertar-en-terminos
+                          terms
+                          coeficiente
+                          exponente)))))))))
 
 
 ;; Inserta el termino en la posición correcta sin ordenar al final
