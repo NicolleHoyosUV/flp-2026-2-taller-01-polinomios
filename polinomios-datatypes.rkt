@@ -20,9 +20,23 @@
 
 ;; DEFINICIÓN DE LOS DATATYPES
 
+
+;; Nombre: nombre-var
+;; Contrato: symbol -> variable
+;; Propósito: Construye una variable a partir de un símbolo.
+
 (define-datatype variable variable?
   (nombre-var
    (s symbol?)))
+
+
+;; Nombre: coef-ent
+;; Contrato: integer -> coeficiente
+;; Propósito: Construye un coeficiente entero.
+
+;; Nombre: coef-rac
+;; Contrato: integer x positive-integer -> coeficiente
+;; Propósito: Construye un coeficiente racional a partir de numerador y denominador.
 
 (define-datatype coeficiente coeficiente?
   (coef-ent
@@ -31,15 +45,30 @@
    (num integer?)
    (den positive?)))
 
+;; Nombre: expo-nat
+;; Contrato: integer -> exponente
+;; Propósito: Construye un exponente a partir de un entero.
+
 (define-datatype exponente exponente?
   (expo-nat
    (k integer?)))
+
+;; Nombre: termino
+;; Contrato: coeficiente x exponente -> termino-tad
+;; Propósito: Construye un término a partir de un coeficiente y un exponente.
 
 (define-datatype termino-tad termino?
   (termino
    (coef coeficiente?)
    (expo exponente?)))
 
+;; Nombre: sin-terminos
+;; Contrato: -> terminos
+;; Propósito: Construye una representación de términos vacía.
+
+;; Nombre: mas-terminos
+;; Contrato: termino x terminos -> terminos
+;; Propósito: Construye una lista de términos agregando un término al inicio.
 
 (define-datatype terminos terminos?
   (sin-terminos)
@@ -47,6 +76,9 @@
    (term termino?)
    (resto terminos?)))
 
+;; Nombre: poli
+;; Contrato: variable x terminos -> polinomio
+;; Propósito: Construye un polinomio a partir de una variable y sus términos
 
 (define-datatype polinomio polinomio?
   (poli
@@ -57,14 +89,20 @@
 ;; FUNCIONES AUXILIARES
 ;; Obtiene el simbolo almacenado en una variable
 
+
+;; Nombre: nombre-variable
+;; Contrato: variable -> symbol
+;; Propósito: Obtiene el símbolo almacenado en una variable.
+
 (define nombre-variable
   (lambda (v)
     (cases variable v
       (nombre-var (s)
                   s))))
 
-
-;; Obtiene el valor concreto de un coeficiente
+;; Nombre: valor-coeficiente
+;; Contrato: coeficiente -> number
+;; Propósito: Obtiene el valor concreto de un coeficiente.
 
 (define valor-coeficiente
   (lambda (coef)
@@ -74,8 +112,9 @@
       (coef-rac (num den)
                 (/ num den)))))
 
-
-;; Obtiene el valor concreto del exponente
+;; Nombre: valor-exponente
+;; Contrato: exponente -> integer
+;; Propósito: Obtiene el valor concreto de un exponente.
 
 (define valor-exponente
   (lambda (expo)
@@ -83,7 +122,10 @@
       (expo-nat (k)
                 k))))
 
-;; Convierte un número racional exacto en un coeficiente
+
+;; Nombre: construir-coeficiente
+;; Contrato: rational -> coeficiente
+;; Propósito: Convierte un número racional exacto en un coeficiente.
 
 (define construir-coeficiente
   (lambda (c)
@@ -99,7 +141,9 @@
                    "El coeficiente debe ser un número racional exacto")))))
 
 
-;; Convierte un entero no negativo en un exponente
+;; Nombre: construir-exponente
+;; Contrato: integer -> exponente
+;; Propósito: Convierte un entero no negativo en un exponente.
 
 (define construir-exponente
   (lambda (k)
@@ -110,7 +154,9 @@
                     "El exponente debe ser un entero no negativo"))))
 
 
-;; Construye un termino a partir de un coeficiente y un exponente
+;; Nombre: construir-termino
+;; Contrato: number x integer -> termino-tad
+;; Propósito: Construye un término a partir de un coeficiente y un exponente.
 
 (define construir-termino
   (lambda (coef expo)
@@ -119,7 +165,9 @@
      (construir-exponente expo))))
 
 
-;; Construye el polinomio cero para una variable dada
+;; Nombre: polinomio-cero
+;; Contrato: symbol -> polinomio
+;; Propósito: Construye el polinomio cero para una variable dada.
 
 (define polinomio-cero
   (lambda (variable)
@@ -131,8 +179,10 @@
                     "La variable debe ser un símbolo"))))
 
 
-;; Inserta un termino manteniendo los exponentes en orden descendente, si el exponente ya existe, suma coeficientes
-;; Si la suma es cero, elimina el termino
+;; Nombre: insertar-termino
+;; Contrato: polinomio x coeficiente x exponente -> polinomio
+;; Propósito: Inserta un término manteniendo los exponentes en orden descendente
+;; si el exponente ya existe, suma los coeficientes y, si la suma es cero, elimina el término.
 
 (define insertar-termino
   (lambda (p coeficiente exponente)
@@ -160,7 +210,9 @@
                           exponente)))))))))
 
 
-;; Inserta el termino en la posición correcta sin ordenar al final
+;; Nombre: insertar-en-terminos
+;; Contrato: terminos x rational x integer -> terminos
+;; Propósito: Inserta un término en la posición correcta manteniendo los exponentes en orden descendente.
 
 (define insertar-en-terminos
   (lambda (terms coeficiente exponente)
@@ -220,7 +272,10 @@
 
 
 
-;; Produce error si el término no existe
+;; Nombre: coeficiente-de
+;; Contrato: polinomio x exponente -> coeficiente
+;; Propósito: Obtiene el coeficiente correspondiente al exponente indicado
+;; produce un error si el término no existe.
 
 (define coeficiente-de
   (lambda (p exponente)
@@ -239,7 +294,9 @@
                  exponente))))))
 
 
-;; Busca el coeficiente correspondiente al exponente
+;; Nombre: buscar-coeficiente
+;; Contrato: terminos x integer -> coeficiente
+;; Propósito: Busca el coeficiente correspondiente a un exponente.
 
 (define buscar-coeficiente
   (lambda (terms exponente)
@@ -276,7 +333,9 @@
 
 
 
-;; Produce error si el término no existe
+;; Nombre: eliminar-termino
+;; Contrato: polinomio x exponente -> polinomio
+;; Propósito: Elimina el término correspondiente al exponente indicado del polinomio.
 
 (define eliminar-termino
   (lambda (p exponente)
@@ -298,7 +357,9 @@
 
 
 
-;; Elimina el termino indicado
+;; Nombre: eliminar-de-terminos
+;; Contrato: terminos x integer -> terminos
+;; Propósito: Elimina el término correspondiente al exponente indicado.
 
 (define eliminar-de-terminos
   (lambda (terms exponente)
@@ -336,6 +397,10 @@
                                       exponente)))))))))))
 
 
+;; Nombre: sumar
+;; Contrato: polinomio x polinomio -> polinomio
+;; Propósito: Suma dos polinomios que tienen la misma variable.
+
 (define sumar
   (lambda (p q)
 
@@ -364,8 +429,10 @@
 
 
 
-;; Suma dos listas de terminos recorriéndolas en paralelo los términos con igual exponente se combinan y si su suma
-;; es cero se eliminan
+;; Nombre: sumar-terminos
+;; Contrato: terminos x terminos -> terminos
+;; Propósito: Suma dos listas de términos recorriéndolas en paralelo
+;; los términos con igual exponente se combinan y, si su suma es cero, se eliminan.
 
 (define sumar-terminos
   (lambda (terms-p terms-q)
