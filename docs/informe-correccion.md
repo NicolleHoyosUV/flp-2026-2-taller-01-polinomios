@@ -1,24 +1,6 @@
 # Informe de corrección — Taller 1: polinomios dispersos
 
-> **Plantilla de entrega.** Copie este archivo a
 
-> `docs/informe-correccion.md` dentro del repositorio del grupo y
-
-> reemplace los marcadores `{{...}}` con su contenido. **No elimine
-
-> las secciones obligatorias.** No se aceptan PDF, DOCX ni imágenes
-
-> insertadas: todo el documento debe ser Markdown, las fórmulas en
-
-> LaTeX (`$...$` / `$$...$$`) y los diagramas, si los hay, en Mermaid.
-
->
-
-> Las demostraciones se hacen una sola vez, sobre la estructura
-
-> recursiva que define la gramática, porque la lógica de las funciones
-
-> es la misma en las tres representaciones.
 
 **Curso:** Fundamentos de Interpretación y Compilación de Lenguajes
 
@@ -519,56 +501,79 @@ también se cumple sobre el polinomio resultante.
 
 ## 3. Equivalencia de las dos representaciones
 
-Argumente por qué las funciones de la interfaz son las mismas para la
+El cliente de este TAD solo usa cuatro funciones: `polinomio-cero`, `insertar-termino`, `coeficiente-de` y `eliminar-termino`. Estas funciones, a su vez, no miran dentro de los datos: solo llaman a los constructores, extractores y predicados de la gramática (`poli`, `termino->coef`, `sin-terminos?`, etc.). Según la sección 2.2 de EOPL, esa es la condición para poder cambiar la representación de un tipo de dato sin tocar el programa que lo usa.
 
-representación basada en listas y la basada en procedimientos, y qué
+```mermaid
+flowchart TD
+    C["Cliente"] --> I["Interfaz: polinomio-cero, insertar-termino, coeficiente-de, eliminar-termino"]
+    I --> O["Constructores, extractores y predicados"]
+    O --> L["Representación con listas"]
+    O --> P["Representación con procedimientos"]
+```
 
-propiedad de la interfaz impide que el cliente las distinga. Basta una
+### 3.1 Qué cambia y qué no
 
-explicación conceptual apoyada en la sección 2.2 de EOPL, sin
+| | Listas | Procedimientos |
+|---|---|---|
+| Constructor `termino` | `(list 'termino coef expo)` | un `lambda` que recibe un mensaje y responde con el campo pedido |
+| Extractor `termino->coef` | `(cadr term)` | `(term 'obtener-coef)` |
+| Predicado `termino?` | compara `(car t)` con `'termino` | pregunta el mensaje `'tipo` y lo compara |
+| Las cuatro funciones y sus auxiliares | idénticas | idénticas |
+| Conversores concreto/abstracto | idénticos | idénticos |
 
-demostración formal.
+Lo único que cambia entre `polinomios-listas.rkt` y `polinomios-procedimientos.rkt` es la capa de constructores, extractores y predicados. El texto de las cuatro funciones, de sus auxiliares y de los conversores es el mismo en los dos archivos. Por eso no hace falta modificarlas al cambiar de representación.
 
-Conviene que la explicación responda a esto:
+### 3.2 Un ejemplo concreto
 
-- El cliente ve un polinomio únicamente a través de las operaciones
+```racket
+(define p
+  (insertar-termino
+   (insertar-termino (polinomio-cero 'x) 7 0)
+   4 5))
+(coeficiente-de p 5)   ; => 4 en las dos representaciones
+```
 
-  definidas por la interfaz del TAD, como `polinomio-cero`,
+Por dentro, en listas `p` es una lista anidada, con la forma `(poli (nombre-var x) (mas-terminos ...))`. En procedimientos, `p` es un procedimiento que solo se puede consultar enviándole mensajes. El cliente obtiene el mismo resultado en ambos casos. En `pruebas-polinomios.rkt` la misma función `pruebas-interfaz` se aplica a las dos representaciones y pasa sin cambios.
 
-  `insertar-termino`, `coeficiente-de` y `eliminar-termino`. El cliente
+### 3.3 La propiedad que impide distinguirlas
 
-  puede solicitar estas operaciones y utilizar sus resultados, pero no
+Las dos representaciones cumplen las mismas ecuaciones entre constructores y observadores. Las cuatro funciones solo dependen de estas ecuaciones:
 
-  necesita conocer ni modificar directamente la estructura interna del
+$$
+\texttt{termino->coef}(\texttt{termino}(c, e)) = c
+\qquad
+\texttt{termino->expo}(\texttt{termino}(c, e)) = e
+$$
 
-  polinomio.
+$$
+\texttt{poli->var}(\texttt{poli}(v, ts)) = v
+\qquad
+\texttt{poli->terms}(\texttt{poli}(v, ts)) = ts
+$$
 
-- En la representación basada en listas, los términos se almacenan
+$$
+\texttt{mas-terminos->term}(\texttt{mas-terminos}(t, r)) = t
+\qquad
+\texttt{mas-terminos->resto}(\texttt{mas-terminos}(t, r)) = r
+$$
 
-  explícitamente como una estructura recursiva. En la representación
+$$
+\texttt{sin-terminos?}(\texttt{sin-terminos}()) = \text{verdadero}
+\qquad
+\texttt{mas-terminos?}(\texttt{sin-terminos}()) = \text{falso}
+$$
 
-  basada en procedimientos, la información se encapsula mediante
+$$
+\texttt{coef-ent?}(\texttt{coef-rac}(a, b)) = \text{falso}
+\qquad
+\texttt{coef-rac->num}(\texttt{coef-rac}(a, b)) = a
+$$
 
-  procedimientos que implementan las operaciones del TAD. Aunque cambia
+Si dos representaciones cumplen estas ecuaciones, cualquier programa escrito solo con la interfaz produce los mismos resultados con ambas. Por ejemplo, `concreto-coef` decide entre entero y racional usando `coef-ent?`, y eso funciona igual con listas y con procedimientos.
 
-  la representación interna, ambas proporcionan las mismas operaciones
+### 3.4 Cuándo sí se notaría la diferencia
 
-  y comportamiento al cliente. Por eso el cambio permanece detrás de
-
-  la barrera de abstracción.
-
-- Para que el cliente notara la diferencia tendría que depender de la
-
-  representación interna, por ejemplo, utilizando directamente
-
-  operaciones específicas de listas como `car` y `cdr`, o dependiendo
-
-  de los procedimientos internos utilizados por la otra representación.
-
-  Esto rompería la barrera de abstracción porque el cliente dejaría de
-
-  depender únicamente de la interfaz del TAD.
-
+El cliente solo podría distinguirlas si rompiera la barrera de abstracción. Por ejemplo, si hiciera `display` de un polinomio (vería una lista en un caso y `#<procedure>` en el otro), o si le aplicara `car` o `cdr` directamente. En ambos casos estaría dependiendo de la representación y no de la interfaz, y eso es justo lo que el TAD busca impedir.
 ---
 
 ## 4. Referencias
