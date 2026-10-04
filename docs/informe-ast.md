@@ -1,14 +1,5 @@
 # Informe de AST — Taller 1: polinomios dispersos
 
-> **Plantilla de entrega.** Copie este archivo a `docs/informe-ast.md`
-> dentro del repositorio del grupo y reemplace los marcadores
-> `{{...}}` con su contenido. **No elimine las secciones
-> obligatorias.** No se aceptan PDF, DOCX ni imágenes insertadas:
-> todo el documento debe ser Markdown, las fórmulas en LaTeX
-> (`$...$` / `$$...$$`) y los diagramas en Mermaid.
->
-> Este taller no pide traza de evaluación ni cadena de ambientes; el
-> intérprete llega en el Taller 2.
 
 **Curso:** Fundamentos de Interpretación y Compilación de Lenguajes
 de Programación — Universidad del Valle, Sede Tuluá.
@@ -26,9 +17,7 @@ de Programación — Universidad del Valle, Sede Tuluá.
 
 ## 1. Gramática considerada
 
-Esta es la gramática del enunciado. Los nombres del recuadro son los
-constructores que deben aparecer como etiquetas en los diagramas de la
-sección 2.
+Esta es la gramática del TAD polinomio; sus constructores son las etiquetas de los nodos de los árboles de la sección 2
 
 ```bnf
 <polinomio>   ::= <variable> <terminos>
@@ -182,14 +171,12 @@ graph TD
 
 ### Ejemplo 4 — el resultado de `(sumar p q)`
 
-Use los polinomios $p$ y $q$ del ejemplo de la Parte 3 del enunciado.
+**Operandos** (los del ejemplo de la Parte 3 del enunciado):
 
-**Operandos:**
+- $p = 4x^{5} - \frac{3}{2}x^{2} + 7$
+- $q = -4x^{5} + \frac{1}{2}x^{2} + 2x$
 
-- $p = 5x^{3} - 3x^{2} + \frac{1}{2}x + 4$
-- $q = 2x^{4} + 3x^{2} - 7$
-
-**Resultado:** $p + q = 2x^{4} + 5x^{3} + \frac{1}{2}x - 3$
+**Resultado:** $p + q = -x^{2} + 2x + 7$
 
 **AST del resultado:**
 
@@ -199,35 +186,28 @@ graph TD
   A --> B[nombre-var: x]
   A --> C[mas-terminos]
   C --> D[termino]
-  D --> E[coef-ent: 2]
-  D --> F[expo-nat: 4]
+  D --> E[coef-ent: -1]
+  D --> F[expo-nat: 2]
   C --> G[mas-terminos]
   G --> H[termino]
-  H --> I[coef-ent: 5]
-  H --> J[expo-nat: 3]
+  H --> I[coef-ent: 2]
+  H --> J[expo-nat: 1]
   G --> K[mas-terminos]
   K --> L[termino]
-  L --> M[coef-rac: 1 / 2]
-  L --> N[expo-nat: 1]
-  K --> O[mas-terminos]
-  O --> P[termino]
-  P --> Q[coef-ent: -3]
-  P --> R[expo-nat: 0]
-  O --> S[sin-terminos]
+  L --> M[coef-ent: 7]
+  L --> N[expo-nat: 0]
+  K --> O[sin-terminos]
 ```
 
-**Origen de cada nodo.** Complete la tabla: por cada término del
-resultado, de cuál operando salió, y aparte los términos que se
-cancelaron y por eso no aparecen en el árbol.
+**Origen de cada nodo.**
 
 | Término del resultado | Viene de | Observación |
 |---|---|---|
-| $2x^{4}$ | $q$ | Proviene de $q$; $p$ no posee término de grado 4. |
-| $5x^{3}$ | $p$ | Proviene de $p$; $q$ no posee término de grado 3. |
-| $\frac{1}{2}x^{1}$ | $p$ | Proviene de $p$; $q$ no posee término de grado 1. |
-| $-3x^{0}$ | Suma de $p$ y $q$ | Suma de los términos independientes ($4 + (-7) = -3$). |
+| $-x^{2}$ | $p$ y $q$ | Se combinan $-\frac{3}{2}x^{2}$ (de $p$) y $\frac{1}{2}x^{2}$ (de $q$): $-\frac{3}{2} + \frac{1}{2} = -1$. Como el resultado es entero, el coeficiente es `coef-ent: -1` y no un `coef-rac`. |
+| $2x$ | $q$ | Solo $q$ tiene término de grado 1. |
+| $7$ | $p$ | Solo $p$ tiene término independiente. |
 
-**Términos cancelados:** El término de grado 2 ($x^{2}$) presente en $p$ con coeficiente $-3$ y en $q$ con coeficiente $3$ se canceló debido a que $(-3) + 3 = 0$. Por el invariante de simplificación del TAD de polinomios dispersos, ningún término con coeficiente nulo puede guardarse en la lista, obligando a omitirlo por completo del árbol de sintaxis abstracta.
+**Términos cancelados:** $4x^{5}$ (de $p$) y $-4x^{5}$ (de $q$) tienen el mismo exponente y $4 + (-4) = 0$. Por el invariante del TAD (sin coeficientes cero), el término desaparece y no tiene nodo en el árbol del resultado.
 
 ---
 

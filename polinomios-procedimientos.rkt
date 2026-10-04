@@ -15,7 +15,7 @@
 ;;   eliminar-termino  : polinomio x exponente -> polinomio
 
 
-;; Representación: cada dato es un procedimiento que recibe un mensaje
+;; Representación: Es cada dato es un procedimiento que recibe un mensaje
 ;; (un símbolo) y responde con el campo pedido. El mensaje 'tipo devuelve
 ;; el nombre de la variante y es lo que usan los predicados.
 
@@ -25,12 +25,14 @@
 
 
 ;;____________AUXILIAR DE LA REPRESENTACION____________________
-;;Nombre: mensaje-invalido
+
+;;Nombre: dato-no-entiende
 ;;Contrato: symbol x symbol -> error
 ;;Proposito: Levanta un error cuando a un dato se le envía un mensaje que no entiende.
-(define mensaje-invalido
+;;helper para no repetir el mismo eopl:error en los 8 constructores.
+(define dato-no-entiende
   (lambda (quien msg)
-    (eopl:error quien "Mensaje desconocido: ~s" msg)))
+    (eopl:error quien "El dato no se entiende: ~s" msg)))
  
 ;;____________CONSTRUCTORES____________________
 (define poli
@@ -40,7 +42,7 @@
         [(eq? msg 'tipo) 'poli]
         [(eq? msg 'var) var]
         [(eq? msg 'terms) terms]
-        [else (mensaje-invalido 'poli msg)]))))
+        [else (dato-no-entiende 'poli msg)]))))
 
 (define nombre-var
   (lambda (s)
@@ -48,14 +50,14 @@
       (cond
         [(eq? msg 'tipo) 'nombre-var]
         [(eq? msg 's) s]
-        [else (mensaje-invalido 'nombre-var msg)]))))
+        [else (dato-no-entiende 'nombre-var msg)]))))
 
 (define sin-terminos
   (lambda ()
     (lambda (msg)
       (cond
         [(eq? msg 'tipo) 'sin-terminos]
-        [else (mensaje-invalido 'sin-terminos msg)]))))
+        [else (dato-no-entiende 'sin-terminos msg)]))))
 
 (define mas-terminos
   (lambda (term resto)
@@ -64,16 +66,16 @@
         [(eq? msg 'tipo) 'mas-terminos]
         [(eq? msg 'term) term]
         [(eq? msg 'resto) resto]
-        [else (mensaje-invalido 'mas-terminos msg)]))))
+        [else (dato-no-entiende 'mas-terminos msg)]))))
 
 (define termino
   (lambda (coef expo)
     (lambda (msg)
       (cond
         [(eq? msg 'tipo) 'termino]
-        [(eq? msg 'coef) coef]
+        [(eq? msg 'obtener-coef) coef]
         [(eq? msg 'expo) expo]
-        [else (mensaje-invalido 'termino msg)]))))
+        [else (dato-no-entiende 'termino msg)]))))
 
 (define coef-ent
   (lambda (n)
@@ -81,7 +83,7 @@
       (cond
         [(eq? msg 'tipo) 'coef-ent]
         [(eq? msg 'n) n]
-        [else (mensaje-invalido 'coef-ent msg)]))))
+        [else (dato-no-entiende 'coef-ent msg)]))))
 
 (define coef-rac
   (lambda (num den)
@@ -90,7 +92,7 @@
         [(eq? msg 'tipo) 'coef-rac]
         [(eq? msg 'num) num]
         [(eq? msg 'den) den]
-        [else (mensaje-invalido 'coef-rac msg)]))))
+        [else (dato-no-entiende 'coef-rac msg)]))))
 
 (define expo-nat
   (lambda (k)
@@ -98,11 +100,12 @@
       (cond
         [(eq? msg 'tipo) 'expo-nat]
         [(eq? msg 'k) k]
-        [else (mensaje-invalido 'expo-nat msg)]))))
+        [else (dato-no-entiende 'expo-nat msg)]))))
 
 
 ;;____________EXTRACTORES______________________
 ;;Cada extractor le envía al dato el mensaje que corresponde a su campo.
+
 (define poli->var (lambda (p) (p 'var)))
 (define poli->terms (lambda (p) (p 'terms)))
  
@@ -111,31 +114,31 @@
 (define mas-terminos->term (lambda (terms) (terms 'term)))
 (define mas-terminos->resto (lambda (terms) (terms 'resto)))
  
-(define termino->coef (lambda (term) (term 'coef)))
+(define termino->coef (lambda (term) (term 'obtener-coef)))
 (define termino->expo (lambda (term) (term 'expo)))
  
-(define coef-ent->n (lambda (coef) (coef 'n)))
-(define coef-rac->num (lambda (coef) (coef 'num)))
-(define coef-rac->den (lambda (coef) (coef 'den)))
+(define coef-ent->n (lambda (obtener-coef) (obtener-coef 'n)))
+(define coef-rac->num (lambda (obtener-coef) (obtener-coef 'num)))
+(define coef-rac->den (lambda (obtener-coef) (obtener-coef 'den)))
  
 (define expo-nat->k (lambda (expo) (expo 'k)))
  
 ;;____________PREDICADOS______________________
-;;Nombre: es-tipo?
+;;Nombre: variante?
 ;;Contrato: any x symbol -> boolean
-;;Proposito: Indica si x es un procedimiento de la representación cuya variante es tipo.
-(define es-tipo?
+;;Proposito: Indica si x es un procedimiento de la representación cuyo tipo es una variante.
+(define variante?
   (lambda (x tipo)
     (and (procedure? x) (eq? (x 'tipo) tipo))))
  
-(define poli? (lambda (p) (es-tipo? p 'poli)))
-(define nombre-var? (lambda (v) (es-tipo? v 'nombre-var)))
-(define sin-terminos? (lambda (terms) (es-tipo? terms 'sin-terminos)))
-(define mas-terminos? (lambda (terms) (es-tipo? terms 'mas-terminos)))
-(define termino? (lambda (t) (es-tipo? t 'termino)))
-(define coef-ent? (lambda (coef) (es-tipo? coef 'coef-ent)))
-(define coef-rac? (lambda (coef) (es-tipo? coef 'coef-rac)))
-(define expo-nat? (lambda (expo) (es-tipo? expo 'expo-nat)))
+(define poli? (lambda (p) (variante? p 'poli)))
+(define nombre-var? (lambda (v) (variante? v 'nombre-var)))
+(define sin-terminos? (lambda (terms) (variante? terms 'sin-terminos)))
+(define mas-terminos? (lambda (terms) (variante? terms 'mas-terminos)))
+(define termino? (lambda (t) (variante? t 'termino)))
+(define coef-ent? (lambda (obtener-coef) (variante? obtener-coef 'coef-ent)))
+(define coef-rac? (lambda (obtener-coef) (variante? obtener-coef 'coef-rac)))
+(define expo-nat? (lambda (expo) (variante? expo 'expo-nat)))
 
 
 
@@ -158,10 +161,10 @@
 
 
 
+
 ;;____________INTERFAZ DEL TAD___________________
-;;funciones de polinomios-listas.rkt
 (provide polinomio-cero insertar-termino coeficiente-de eliminar-termino)
- 
+
 ;;Nombre:polinomio-cero
 ;;Contrato:symbol -> polinomio
 ;;Proposito:Retorna el polinomio nulo en la variable que se da.
@@ -187,15 +190,15 @@
                  (mas-terminos (termino (abstracto-coef (+ c actual-coef)) (abstracto-expo e)) resto))]
             [else
              (mas-terminos (mas-terminos->term terms) (insertar-termino-aux resto c e))])))))
- 
+
 ;;Nombre:insertar-termino
 ;;Contrato:polinomio x exact-number x exponente -> polinomio
 ;;Proposito:Inserta un término conservando el orden decreciente y la simplificación.
 (define insertar-termino
   (lambda (polinomio coeficiente exponente)
     (cond
-      [(not (and (rational? coeficiente) (exact? coeficiente)))
- (eopl:error 'insertar-termino "El coeficiente debe ser un número exacto")]
+      [(not (and (number? coeficiente) (exact? coeficiente)))
+       (eopl:error 'insertar-termino "El coeficiente debe ser un número exacto")]
       [(or (not (integer? exponente)) (< exponente 0))
        (eopl:error 'insertar-termino "El exponente debe ser un entero no negativo")]
       [(= coeficiente 0) polinomio]
@@ -213,7 +216,7 @@
             [(= e actual-expo) actual-coef]
             [(< e actual-expo) (coeficiente-de-aux (mas-terminos->resto terms) e)]
             [else (eopl:error 'coeficiente-de "El polinomio no tiene termino con ese exponente")])))))
- 
+
 ;;Nombre:coeficiente-de
 ;;Contrato:polinomio x exponente -> exact-number
 ;;Proposito:Busca y retorna el coeficiente correspondiente al exponente dado.
@@ -235,7 +238,7 @@
             [(< e actual-expo) (mas-terminos (mas-terminos->term terms)
                                               (eliminar-termino-aux (mas-terminos->resto terms) e))]
             [else (eopl:error 'eliminar-termino "El polinomio no tiene termino con ese exponente")])))))
- 
+
 ;;Nombre:eliminar-termino
 ;;Contrato:polinomio x exponente -> polinomio
 ;;Proposito:Elimina el término correspondiente al exponente dado.
@@ -248,3 +251,77 @@
        (poli (poli->var polinomio)
              (eliminar-termino-aux (poli->terms polinomio) exponente))])))
 
+
+
+
+
+
+
+
+
+
+;; EJEMPLOS DE CONSTRUCTORES Y OBSERVADOREs
+
+
+;; (define ver (lambda (x) (display x) (newline))))
+
+;; 1. Término con coeficiente entero: 4x^5
+;; (define t1 (termino (coef-ent 4) (expo-nat 5)))
+;; (coef-ent->n (termino->coef t1))                 ; => 4
+;; (expo-nat->k (termino->expo t1))                 ; => 5
+;; (termino? t1)                                    ; => #t
+
+;; 2. Término con coeficiente racional: -(3/2)x^2
+;; (define t2 (termino (coef-rac -3 2) (expo-nat 2)))
+;; (coef-rac->num (termino->coef t2))               ; => -3
+;; (coef-rac->den (termino->coef t2))               ; => 2
+;; (coef-ent? (termino->coef t2))                   ; => #f
+
+;; 3. Variable
+;; (nombre-var->s (nombre-var 'x))                  ; => x
+
+;; 4. Lista de términos
+;; (define ts (mas-terminos t1 (mas-terminos t2 (sin-terminos))))
+;; (mas-terminos? ts)                               ; => #t
+;; (sin-terminos? (mas-terminos->resto (mas-terminos->resto ts)))  ; => #t
+
+;; 5. Polinomio completo
+;; (define pp (poli (nombre-var 'x) ts))
+;; (poli? pp)                                       ; => #t
+;; (nombre-var->s (poli->var pp))                   ; => x
+
+
+;; ______________________________________________________________________________
+;; EJEMPLOS DE USO DE LA INTERFAZ
+;; ______________________________________________________________________________
+;; (define P0 (polinomio-cero 'x))
+;; (define P1 (insertar-termino P0 7 3))                                  ; 7x^3
+;; (define P3 (insertar-termino (insertar-termino (insertar-termino P0 4 4) -1/2 2) 9 0))  ; 4x^4 - 1/2x^2 + 9
+
+;; --- polinomio-cero ---
+;; (nombre-var->s (poli->var (polinomio-cero 'x)))           ; => x
+;; (nombre-var->s (poli->var (polinomio-cero 'y)))           ; => y
+;; (sin-terminos? (poli->terms (polinomio-cero 'z)))         ; => #t
+;; (poli? (polinomio-cero 'variable_larga))                  ; => #t
+;; (polinomio-cero 123)                                      ; [Error] la variable debe ser un símbolo
+
+;; --- insertar-termino ---
+;; (coeficiente-de (insertar-termino P0 5 4) 4)              ; => 5
+;; (coeficiente-de (insertar-termino P1 3 3) 3)              ; => 10
+;; (sin-terminos? (poli->terms (insertar-termino P1 -7 3)))  ; => #t (se cancela)
+;; (coeficiente-de (insertar-termino P1 0 10) 3)             ; => 7 (coeficiente cero no altera)
+;; (insertar-termino P0 3 -2)                                ; [Error] exponente negativo
+
+;; --- coeficiente-de ---
+;; (coeficiente-de P3 4)                                     ; => 4
+;; (coeficiente-de P3 2)                                     ; => -1/2
+;; (coeficiente-de P3 0)                                     ; => 9
+;; (coeficiente-de P1 3)                                     ; => 7
+;; (coeficiente-de P3 3)                                     ; [Error] exponente inexistente
+
+;; --- eliminar-termino ---
+;; (coeficiente-de (eliminar-termino P3 4) 0)                ; => 9
+;; (coeficiente-de (eliminar-termino P3 2) 4)                ; => 4
+;; (coeficiente-de (eliminar-termino P3 0) 2)                ; => -1/2
+;; (sin-terminos? (poli->terms (eliminar-termino P1 3)))     ; => #t
+;; (eliminar-termino P3 5)                                   ; [Error] exponente inexistente

@@ -163,19 +163,19 @@
 ;; ______________________________________________________________________________
 
 ;; 1. Polinomio nulo: P0 = 0 (en x)
-(define P0 (polinomio-cero 'x))
+;; (define P0 (polinomio-cero 'x))
 
 ;; 2. Un término entero: P1 = 7x^3
-(define P1 (insertar-termino P0 7 3))
+;; (define P1 (insertar-termino P0 7 3))
 
 ;; 3. Dos términos racionales: P2 = 3/4x^5 - 2x
-(define P2 (insertar-termino (insertar-termino P0 3/4 5) -2 1))
+;; (define P2 (insertar-termino (insertar-termino P0 3/4 5) -2 1))
 
 ;; 4. Tres términos con término independiente: P3 = 4x^4 - 1/2x^2 + 9
-(define P3 (insertar-termino (insertar-termino (insertar-termino P0 4 4) -1/2 2) 9 0))
+;; (define P3 (insertar-termino (insertar-termino (insertar-termino P0 4 4) -1/2 2) 9 0))
 
 ;; 5. Polinomio en otra variable: P4 = 5y^2 + 3y
-(define P4 (insertar-termino (insertar-termino (polinomio-cero 'y) 5 2) 3 1))
+;; (define P4 (insertar-termino (insertar-termino (polinomio-cero 'y) 5 2) 3 1))
 
 
 ;; ______________________________________________________________________________
@@ -183,32 +183,32 @@
 ;; ______________________________________________________________________________
 
 ;; --- 1. polinomio-cero ---
-(polinomio-cero 'x)                             ; 1.1: Creación estándar en variable 'x
-(polinomio-cero 'y)                             ; 1.2: Creación en variable 'y
-(polinomio-cero 'z)                             ; 1.3: Creación en variable 'z
-(polinomio-cero 'variable_larga)                ; 1.4: Creación con identificador largo
-; (polinomio-cero 123)                          ; 1.5 [Error]: La variable debe ser un símbolo
+;; (polinomio-cero 'x)                             ; 1.1: Creación estándar en variable 'x
+;; (polinomio-cero 'y)                             ; 1.2: Creación en variable 'y
+;; (polinomio-cero 'z)                             ; 1.3: Creación en variable 'z
+;; (polinomio-cero 'variable_larga)                ; 1.4: Creación con identificador largo
+;; (polinomio-cero 123)                            ; 1.5 [Error]: La variable debe ser un símbolo
 
 
 ;; --- 2. insertar-termino ---
-(insertar-termino P0 5 4)                       ; 2.1: Insertar en polinomio nulo -> 5x^4
-(insertar-termino P1 3 3)                       ; 2.2: Sumar a término existente (7+3) -> 10x^3
-(insertar-termino P1 -7 3)                      ; 2.3: Cancelación por suma a cero -> Polinomio nulo
-(insertar-termino P1 0 10)                      ; 2.4: Coeficiente cero no altera -> 7x^3
-; (insertar-termino P0 3 -2)                    ; 2.5 [Error]: Exponente negativo
+;; (insertar-termino P0 5 4)                       ; 2.1: Insertar en polinomio nulo -> 5x^4
+;; (insertar-termino P1 3 3)                       ; 2.2: Sumar a término existente (7+3) -> 10x^3
+;; (insertar-termino P1 -7 3)                      ; 2.3: Cancelación por suma a cero -> Polinomio nulo
+;; (insertar-termino P1 0 10)                      ; 2.4: Coeficiente cero no altera -> 7x^3
+;; (insertar-termino P0 3 -2)                      ; 2.5 [Error]: Exponente negativo
 
 
 ;; --- 3. coeficiente-de ---
-(coeficiente-de P3 4)                           ; 3.1: Coeficiente entero existente -> 4
-(coeficiente-de P3 2)                           ; 3.2: Coeficiente racional -> -1/2
-(coeficiente-de P3 0)                           ; 3.3: Término independiente -> 9
-(coeficiente-de P1 3)                           ; 3.4: Coeficiente en polinomio de un solo término -> 7
-; (coeficiente-de P3 3)                         ; 3.5 [Error]: Exponente inexistente
+;; (coeficiente-de P3 4)                           ; 3.1: Coeficiente entero existente -> 4
+;; (coeficiente-de P3 2)                           ; 3.2: Coeficiente racional -> -1/2
+;; (coeficiente-de P3 0)                           ; 3.3: Término independiente -> 9
+;; (coeficiente-de P1 3)                           ; 3.4: Coeficiente en polinomio de un solo término -> 7
+;; (coeficiente-de P3 3)                           ; 3.5 [Error]: Exponente inexistente
 
 
 ;; --- 4. eliminar-termino ---
-(eliminar-termino P3 4)                         ; 4.1: Eliminar término de mayor grado -> -1/2x^2 + 9
-(eliminar-termino P3 2)                         ; 4.2: Eliminar término intermedio -> 4x^4 + 9
-(eliminar-termino P3 0)                         ; 4.3: Eliminar término independiente -> 4x^4 - 1/2x^2
-(eliminar-termino P1 3)                         ; 4.4: Eliminar único término -> Retorna polinomio nulo
-; (eliminar-termino P3 5)                       ; 4.5 [Error]: Intentar eliminar término inexistente
+;; (eliminar-termino P3 4)                         ; 4.1: Eliminar término de mayor grado -> -1/2x^2 + 9
+;; (eliminar-termino P3 2)                         ; 4.2: Eliminar término intermedio -> 4x^4 + 9
+;; (eliminar-termino P3 0)                         ; 4.3: Eliminar término independiente -> 4x^4 - 1/2x^2
+;; (eliminar-termino P1 3)                         ; 4.4: Eliminar único término -> Retorna polinomio nulo
+;; (eliminar-termino P3 5)                         ; 4.5 [Error]: Intentar eliminar término inexistente

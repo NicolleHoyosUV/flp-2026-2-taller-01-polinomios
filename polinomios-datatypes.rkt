@@ -441,112 +441,116 @@
                                                          resto-p
                                                          resto-q)))))))))))))))))
 
+
+
+
+
 ;; EJEMPLOS DE CONSTRUCCIÓN DE DATOS
 
 ;; Ejemplo 1:
 ;; p1 representa 4x^5 - (3/2)x^2 + 7
 
-(define p1
-  (poli
-   (nombre-var 'x)
-   (mas-terminos
-    (termino (coef-ent 4) (expo-nat 5))
-    (mas-terminos
-     (termino (coef-rac -3 2) (expo-nat 2))
-     (mas-terminos
-      (termino (coef-ent 7) (expo-nat 0))
-      (sin-terminos))))))
+;; (define p1
+;;   (poli
+;;    (nombre-var 'x)
+;;    (mas-terminos
+;;     (termino (coef-ent 4) (expo-nat 5))
+;;     (mas-terminos
+;;      (termino (coef-rac -3 2) (expo-nat 2))
+;;      (mas-terminos
+;;       (termino (coef-ent 7) (expo-nat 0))
+;;       (sin-terminos))))))
 
 
 ;; Ejemplo 2:
 ;; p2 representa -4x^5 + (1/2)x^2 + 2x
 
-(define p2
-  (poli
-   (nombre-var 'x)
-   (mas-terminos
-    (termino (coef-ent -4) (expo-nat 5))
-    (mas-terminos
-     (termino (coef-rac 1 2) (expo-nat 2))
-     (mas-terminos
-      (termino (coef-ent 2) (expo-nat 1))
-      (sin-terminos))))))
+;; (define p2
+;;   (poli
+;;    (nombre-var 'x)
+;;    (mas-terminos
+;;     (termino (coef-ent -4) (expo-nat 5))
+;;     (mas-terminos
+;;      (termino (coef-rac 1 2) (expo-nat 2))
+;;      (mas-terminos
+;;       (termino (coef-ent 2) (expo-nat 1))
+;;       (sin-terminos))))))
 
 
 ;; Ejemplo 3:
 ;; p3 representa 3x^4 - 5x
 
-(define p3
-  (poli
-   (nombre-var 'x)
-   (mas-terminos
-    (termino (coef-ent 3) (expo-nat 4))
-    (mas-terminos
-     (termino (coef-ent -5) (expo-nat 1))
-     (sin-terminos)))))
+;; (define p3
+;;   (poli
+;;    (nombre-var 'x)
+;;    (mas-terminos
+;;     (termino (coef-ent 3) (expo-nat 4))
+;;     (mas-terminos
+;;      (termino (coef-ent -5) (expo-nat 1))
+;;      (sin-terminos)))))
 
 
 ;; Ejemplo 4:
 ;; p4 representa el polinomio cero en la variable y
 
-(define p4
-  (poli
-   (nombre-var 'y)
-   (sin-terminos)))
+;; (define p4
+;;   (poli
+;;    (nombre-var 'y)
+;;    (sin-terminos)))
 
 
 ;; Ejemplo 5:
 ;; p5 representa 2x^6 + (5/3)x^3 - 1
 
-(define p5
-  (poli
-   (nombre-var 'x)
-   (mas-terminos
-    (termino (coef-ent 2) (expo-nat 6))
-    (mas-terminos
-     (termino (coef-rac 5 3) (expo-nat 3))
-     (mas-terminos
-      (termino (coef-ent -1) (expo-nat 0))
-      (sin-terminos))))))
+;; (define p5
+;;   (poli
+;;    (nombre-var 'x)
+;;    (mas-terminos
+;;     (termino (coef-ent 2) (expo-nat 6))
+;;     (mas-terminos
+;;      (termino (coef-rac 5 3) (expo-nat 3))
+;;      (mas-terminos
+;;       (termino (coef-ent -1) (expo-nat 0))
+;;       (sin-terminos))))))
 
 
 
 ;; EJEMPLOS DE polinomio-cero
 
 ;; Ejemplo 1
-(define ejemplo-cero-1
-  (polinomio-cero 'x))
+;; (define ejemplo-cero-1
+;;   (polinomio-cero 'x))
 
 ;; Ejemplo 2
-(define ejemplo-cero-2
-  (polinomio-cero 'y))
+;; (define ejemplo-cero-2
+;;   (polinomio-cero 'y))
 
 ;; Ejemplo 3
-(define ejemplo-cero-3
-  (polinomio-cero 'z))
+;; (define ejemplo-cero-3
+;;   (polinomio-cero 'z))
 
 
 ;; EJEMPLOS DE insertar-termino
 
 ;; Ejemplo 1: insertar un término con exponente nuevo
-(define ejemplo-insertar-1
-  (insertar-termino p1 6 3))
+;; (define ejemplo-insertar-1
+;;   (insertar-termino p1 6 3))
 
 ;; Resultado esperado:
 ;; 4x^5 + 6x^3 - (3/2)x^2 + 7
 
 
-;; Ejemplo 2: insertar sobre un exponente que ya existe
-(define ejemplo-insertar-2
-  (insertar-termino p1 3/2 2))
+;; Ejemplo 2: insertar sobre un exponente que ya existe (la suma da cero)
+;; (define ejemplo-insertar-2
+;;   (insertar-termino p1 3/2 2))
 
 ;; Resultado esperado:
-;; 4x^5 + 7x^2 + 7
+;; 4x^5 + 7   (-(3/2) + 3/2 = 0, el término x^2 desaparece)
 
 
 ;; Ejemplo 3: insertar un coeficiente cero
-(define ejemplo-insertar-3
-  (insertar-termino p1 0 4))
+;; (define ejemplo-insertar-3
+;;   (insertar-termino p1 0 4))
 
 ;; Resultado esperado:
 ;; 4x^5 - (3/2)x^2 + 7
@@ -555,44 +559,44 @@
 ;; EJEMPLOS DE coeficiente-de
 
 ;; Ejemplo 1
-(define ejemplo-coeficiente-1
-  (coeficiente-de p1 5))
+;; (define ejemplo-coeficiente-1
+;;   (coeficiente-de p1 5))
 ;; Resultado esperado: 4
 
 
 ;; Ejemplo 2
-(define ejemplo-coeficiente-2
-  (coeficiente-de p1 2))
+;; (define ejemplo-coeficiente-2
+;;   (coeficiente-de p1 2))
 ;; Resultado esperado: -3/2
 
 
 ;; Ejemplo 3
-(define ejemplo-coeficiente-3
-  (coeficiente-de p1 0))
+;; (define ejemplo-coeficiente-3
+;;   (coeficiente-de p1 0))
 ;; Resultado esperado: 7
 
 
 ;; EJEMPLOS DE eliminar-termino
 
 ;; Ejemplo 1
-(define ejemplo-eliminar-1
-  (eliminar-termino p1 5))
+;; (define ejemplo-eliminar-1
+;;   (eliminar-termino p1 5))
 
 ;; Resultado esperado:
 ;; -(3/2)x^2 + 7
 
 
 ;; Ejemplo 2
-(define ejemplo-eliminar-2
-  (eliminar-termino p1 2))
+;; (define ejemplo-eliminar-2
+;;   (eliminar-termino p1 2))
 
 ;; Resultado esperado:
 ;; 4x^5 + 7
 
 
 ;; Ejemplo 3
-(define ejemplo-eliminar-3
-  (eliminar-termino p1 0))
+;; (define ejemplo-eliminar-3
+;;   (eliminar-termino p1 0))
 
 ;; Resultado esperado:
 ;; 4x^5 - (3/2)x^2
@@ -606,8 +610,8 @@
 ;; Resultado:
 ;; -x^2 + 2x + 7
 
-(define ejemplo-sumar-1
-  (sumar p1 p2))
+;; (define ejemplo-sumar-1
+;;   (sumar p1 p2))
 
 
 ;; Ejemplo 2:
@@ -615,8 +619,8 @@
 ;; Resultado:
 ;; 4x^5 + 3x^4 - (3/2)x^2 - 5x + 7
 
-(define ejemplo-sumar-2
-  (sumar p1 p3))
+;; (define ejemplo-sumar-2
+;;   (sumar p1 p3))
 
 
 ;; Ejemplo 3:
@@ -624,5 +628,5 @@
 ;; Resultado:
 ;; -4x^5 + 3x^4 + (1/2)x^2 - 3x
 
-(define ejemplo-sumar-3
-  (sumar p2 p3))
+;; (define ejemplo-sumar-3
+;;   (sumar p2 p3))
