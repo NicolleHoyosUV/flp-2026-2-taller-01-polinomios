@@ -1,22 +1,33 @@
 # Informe de corrección — Taller 1: polinomios dispersos
 
 > **Plantilla de entrega.** Copie este archivo a
+
 > `docs/informe-correccion.md` dentro del repositorio del grupo y
+
 > reemplace los marcadores `{{...}}` con su contenido. **No elimine
+
 > las secciones obligatorias.** No se aceptan PDF, DOCX ni imágenes
+
 > insertadas: todo el documento debe ser Markdown, las fórmulas en
+
 > LaTeX (`$...$` / `$$...$$`) y los diagramas, si los hay, en Mermaid.
+
 >
+
 > Las demostraciones se hacen una sola vez, sobre la estructura
+
 > recursiva que define la gramática, porque la lógica de las funciones
+
 > es la misma en las tres representaciones.
 
 **Curso:** Fundamentos de Interpretación y Compilación de Lenguajes
+
 de Programación — Universidad del Valle, Sede Tuluá.
 
 **Integrantes del grupo:**
 
 | Nombre | Código | Correo institucional |
+
 |--------|--------|----------------------|
 |Adriana Milena Noscue Dagua | 2477336 |adriana.noscue@correounivalle.edu.co |
 |Sebastian Cucalon Astorquiza| 2477344|sebastian.cucalon@correounivalle.edu.co |
@@ -30,53 +41,76 @@ de Programación — Universidad del Valle, Sede Tuluá.
 ### 1.1 Corrección de programas recursivos
 
 Sea $f : A \to B$ una función y $A$ un conjunto definido
+
 recursivamente. Sea $P_f$ un programa recursivo en Racket que pretende
+
 calcular $f$. Decimos que $P_f$ es correcto con respecto a su
+
 especificación si se cumple:
 
 $$
+
 \forall a \in A \,:\, P_f(a) = f(a)
+
 $$
 
 La estrategia de demostración es **inducción estructural** sobre $A$.
+
 Aquí $A$ es el conjunto de listas de términos que genera la gramática:
 
 - **Caso base:** $a = \text{sin-terminos}()$, y se verifica
+
   $P_f(a) = f(a)$ directamente.
+
 - **Caso inductivo:** $a = \text{mas-terminos}(t, r)$. Se asume la
+
   **hipótesis de inducción** $P_f(r) = f(r)$ sobre el resto de la
+
   lista y se demuestra $P_f(a) = f(a)$.
 
 Si alguna de sus funciones quedó escrita con un acumulador en lugar de
+
 recursión estructural, la corrección se argumenta con una invariante
+
 del acumulador y no con la hipótesis de inducción: enuncie la
+
 invariante, demuestre que vale al inicio, que cada paso la conserva y
+
 que al terminar implica la post-condición.
 
 ### 1.2 El invariante de la representación
 
 Las cuatro condiciones del enunciado se enuncian como una única
+
 propiedad sobre polinomios. Sea $p$ un polinomio con términos
+
 $t_1, t_2, \ldots, t_n$, donde $t_i = (c_i, e_i)$:
 
 $$
+
 \mathrm{Inv}(p) \equiv
+
 \underbrace{\forall i < n : e_i > e_{i+1}}_{\text{orden estricto}}
+
 \ \land\
+
 \underbrace{\forall i : c_i \neq 0}_{\text{sin ceros}}
+
 \ \land\
+
 \underbrace{\forall i : e_i \in \mathbb{N}}_{\text{exponentes naturales}}
+
 \ \land\
+
 \underbrace{\forall i : \mathrm{red}(c_i)}_{\text{racionales reducidos}}
+
 $$
 
 donde $\mathrm{red}\left(\frac{a}{b}\right)$ abrevia
-$b > 0 \,\land\, \mathrm{mcd}(|a|, b) = 1$, y un coeficiente entero se
-toma como el racional de denominador $1$.
 
-{{Si prefiere escribir el invariante con otra notación, hágalo, pero
-las cuatro condiciones deben quedar todas y de forma que se puedan
-verificar término por término.}}
+$b > 0 \,\land\, \mathrm{mcd}(|a|, b) = 1$, y un coeficiente entero se
+
+toma como el racional de denominador $1$.
 
 ---
 
@@ -87,34 +121,85 @@ verificar término por término.}}
 **Especificación.**
 
 - **Tipo:** `coeficiente-de : polinomio × exponente -> coeficiente`
+
 - **Pre-condición:** $\mathrm{Inv}(p)$ y $e \in \mathbb{N}$ (el exponente es un entero no negativo).
-- **Post-condición:** $\text{Post}(p, e, r) \equiv {{\ldots}}$ cuando
-  el exponente $e$ aparece en $p$; y la función levanta
-  `eopl:error` cuando no aparece.
+
+- **Post-condición:** si el exponente $e$ aparece en $p$ asociado al
+
+coeficiente $c$, entonces $r=c$; si el exponente $e$ no aparece en $p$,
+
+la función levanta `eopl:error`.
 
 **Código.**
 
 ```racket
-; coeficiente-de : polinomio x exponente -> exact-number
-; Propósito: Busca y retorna el coeficiente correspondiente al exponente dado en el polinomio.
-(define coeficiente-de-aux
-  (lambda (terms e)
-    (if (sin-terminos? terms)
-        (eopl:error 'coeficiente-de "El polinomio no tiene termino con ese exponente")
-        (let ([actual-coef (concreto-coef (termino->coef (mas-terminos->term terms)))]
-              [actual-expo (concreto-expo (termino->expo (mas-terminos->term terms)))])
-          (cond
-            [(= e actual-expo) actual-coef]
-            [(< e actual-expo) (coeficiente-de-aux (mas-terminos->resto terms) e)]
-            [else (eopl:error 'coeficiente-de "El polinomio no tiene termino con ese exponente")])))))
 
 (define coeficiente-de
-  (lambda (polinomio exponente)
-    (cond
-      [(or (not (integer? exponente)) (< exponente 0))
-       (eopl:error 'coeficiente-de "El exponente debe ser un entero no negativo")]
-      [else
-       (coeficiente-de-aux (poli->terms polinomio) exponente)])))
+
+  (lambda (p exponente)
+
+    (if (not (and (integer? exponente)
+
+                  (>= exponente 0)))
+
+        (eopl:error 'coeficiente-de
+
+                    "El exponente debe ser un entero no negativo")
+
+        (cases polinomio p
+
+          (poli (var terms)
+
+                (buscar-coeficiente
+
+                 terms
+
+                 exponente))))))
+
+(define buscar-coeficiente
+
+  (lambda (terms exponente)
+
+    (cases terminos terms
+
+      (sin-terminos ()
+
+                    (eopl:error 'coeficiente-de
+
+                                "El exponente no existe"))
+
+      (mas-terminos (term resto)
+
+                    (cases termino-tad term
+
+                      (termino (coef expo)
+
+                               (let ((expo-actual
+
+                                      (valor-exponente expo)))
+
+                                 (cond
+
+                                   ((= exponente expo-actual)
+
+                                    (valor-coeficiente coef))
+
+                                   ((> exponente expo-actual)
+
+                                    (eopl:error
+
+                                     'coeficiente-de
+
+                                     "El exponente no existe"))
+
+                                   (else
+
+                                    (buscar-coeficiente
+
+                                     resto
+
+                                     exponente))))))))))
+
 ```
 
 **Demostración.**
@@ -122,16 +207,23 @@ verificar término por término.}}
 - **Caso base** ($\text{sin-terminos}$): Cuando $\text{terms} = \text{sin-terminos}()$, no hay términos que evaluar. La condición `(sin-terminos? terms)` se evalúa como verdadera y la función ejecuta inmediatamente `(eopl:error ...)`. Esto cumple de manera exacta con la especificación de retornar error cuando el exponente no se encuentra presente.
 
  $$
+
  P_f(\text{sin-terminos}()) = \text{error} = f(\text{sin-terminos}())
+
  $$
 
 - **Caso inductivo** ($\text{mas-terminos}(t, r)$): Sea $t = (c_{\text{act}}, e_{\text{act}})$. Se asume la hipótesis de inducción $P_f(r) = f(r)$ para la cola de términos $r$. Evaluamos tres casos:
+
   1. Si $e = e_{\text{act}}$, la función retorna $c_{\text{act}}$, cumpliendo la post-condición.
-  2. Si $e < e_{\text{act}}$, por la H.I. la llamada recursiva `coeficiente-de-aux(r, e)` retorna $f(r)$, buscando correctamente el coeficiente en el resto de la lista.
+
+  2. Si $e < e_{\text{act}}$, por la H.I. la llamada recursiva buscar-coeficiente(r, e) retorna $f(r)$, buscando correctamente el coeficiente en el resto de la lista.
+
   3. Si $e > e_{\text{act}}$, por el orden estrictamente decreciente garantizado por $\mathrm{Inv}(p)$, sabemos que $\forall t_j \in r, e_j < e_{\text{act}} < e$. Es imposible que $e$ se encuentre en $r$, por lo que se corta la búsqueda en $O(1)$ y se levanta `eopl:error` sin necesidad de recorrer el resto de la lista.
 
   $$
+
   P_f(\text{mas-terminos}(t, r)) = f(\text{mas-terminos}(t, r))
+
   $$
 
 - **Levantamiento del error.** Se levanta el error si se alcanza $\text{sin-terminos}()$ o si $e > e_{\text{act}}$, casos donde es matemáticamente imposible que el término exista. Si el término existe, el orden estricto garantiza que la búsqueda se detendrá únicamente en el caso $e = e_{\text{act}}$, retornando el coeficiente sin arrojar error.
@@ -147,44 +239,110 @@ verificar término por término.}}
 **Especificación.**
 
 - **Tipo:** `eliminar-termino : polinomio × exponente -> polinomio`
+
 - **Pre-condición:** $\mathrm{Inv}(p)$ y $e \in \mathbb{N}$ (entero no negativo).
+
 - **Post-condición:** el resultado contiene **exactamente** los
+
   términos de $p$ menos el de exponente $e$. Formalmente:
+
   $$
+
   \text{terminos}(r) = \text{terminos}(p) \setminus \{(c, e)\}
+
   $$
+
   y la función levanta `eopl:error` si $e$ no aparece en $p$.
 
 **Código.**
 
 ```racket
-(define eliminar-termino-aux
-  (lambda (terms e)
-    (if (sin-terminos? terms)
-        (eopl:error 'eliminar-termino "El polinomio no tiene termino con ese exponente")
-        (let ([actual-expo (concreto-expo (termino->expo (mas-terminos->term terms)))])
-          (cond
-            [(= e actual-expo) (mas-terminos->resto terms)]
-            [(< e actual-expo) (mas-terminos (mas-terminos->term terms)
-                                             (eliminar-termino-aux (mas-terminos->resto terms) e))]
-            [else (eopl:error 'eliminar-termino "El polinomio no tiene termino con ese exponente")])))))
-
 (define eliminar-termino
-  (lambda (polinomio exponente)
-    (cond
-      [(or (not (integer? exponente)) (< exponente 0))
-       (eopl:error 'eliminar-termino "El exponente debe ser un entero no negativo")]
-      [else
-       (poli (poli->var polinomio)
-             (eliminar-termino-aux (poli->terms polinomio) exponente))])))
+
+  (lambda (p exponente)
+
+    (if (not (and (integer? exponente)
+
+                  (>= exponente 0)))
+
+        (eopl:error 'eliminar-termino
+
+                    "El exponente debe ser un entero no negativo")
+
+        (cases polinomio p
+
+          (poli (var terms)
+
+                (poli
+
+                 var
+
+                 (eliminar-de-terminos
+
+                  terms
+
+                  exponente)))))))
+
+(define eliminar-de-terminos
+
+  (lambda (terms exponente)
+
+    (cases terminos terms
+
+      (sin-terminos ()
+
+                    (eopl:error 'eliminar-termino
+
+                                "El exponente no existe"))
+
+      (mas-terminos (term resto)
+
+                    (cases termino-tad term
+
+                      (termino (coef expo)
+
+                               (let ((expo-actual
+
+                                      (valor-exponente expo)))
+
+                                 (cond
+
+                                   ((= exponente expo-actual)
+
+                                    resto)
+
+                                   ((> exponente expo-actual)
+
+                                    (eopl:error
+
+                                     'eliminar-termino
+
+                                     "El exponente no existe"))
+
+                                   (else
+
+                                    (mas-terminos
+
+                                     term
+
+                                     (eliminar-de-terminos
+
+                                      resto
+
+                                      exponente)))))))))))
+
 ```
 
-**Demostración.** 
+**Demostración.**
+
 - **Caso base** ($\text{sin-terminos}$): Si $terms = \text{sin-terminos}()$, no hay términos que eliminar. Se ejecuta directamente `eopl:error`, lo cual satisface la post-condición de fallar cuando $e$ no está en el polinomio.
 
-- **Caso inductivo** ($\text{mas-terminos}(t, r)$): Sea $t = (c_{\text{act}}, e_{\text{act}})$. Asumimos la H.I. de que `eliminar-termino-aux(r, e)` elimina correctamente el término de exponente $e$ de $r$.
+- **Caso inductivo** ($\text{mas-terminos}(t, r)$): Sea $t = (c_{\text{act}}, e_{\text{act}})$. Asumimos la H.I. de que eliminar-de-terminos(r, e) elimina correctamente el término de exponente $e$ de $r$.
+
   1. Si $e = e_{\text{act}}$, se retorna $r$, eliminando el primer término. Los términos resultantes corresponden exactamente a $\text{terminos}(p) \setminus \{(c, e)\}$.
+
   2. Si $e < e_{\text{act}}$, por H.I. la llamada recursiva elimina el término de $r$ devolviendo $r'$. Se reconstruye la lista como $\text{mas-terminos}(t, r')$.
+
   3. Si $e > e_{\text{act}}$, dado $\mathrm{Inv}(p)$, $e$ no está en $r$ y se levanta `eopl:error`.
 
 - **Preservación del invariante:** Quitar un elemento de una secuencia decreciente produce una subsecuencia que conserva el orden estrictamente decreciente ($e_i > e_{i+1}$). Tampoco introduce coeficientes en cero ni altera los coeficientes racionales reducidos. Por ende, el resultado preserva $\mathrm{Inv}(p')$.
@@ -198,62 +356,227 @@ verificar término por término.}}
 ### 2.3 `insertar-termino` preserva el invariante
 
 **Enunciado.** Si $\mathrm{Inv}(p)$ vale antes de la llamada, entonces
+
 $\mathrm{Inv}(\texttt{insertar-termino}(p, c, e))$ vale sobre el
+
 resultado.
 
 **Código.**
 
 ```racket
-(define (insertar-termino p c e)
-  ...)
+
+(define insertar-termino
+
+  (lambda (p coeficiente exponente)
+
+    (if (not (and (integer? exponente)
+
+                  (>= exponente 0)))
+
+        (eopl:error 'insertar-termino
+
+                    "El exponente debe ser un entero no negativo")
+
+        (if (not (and (rational? coeficiente)
+
+                      (exact? coeficiente)))
+
+            (eopl:error 'insertar-termino
+
+                        "El coeficiente debe ser un número racional exacto")
+
+            (if (= coeficiente 0)
+
+                p
+
+                (cases polinomio p
+
+                  (poli (var terms)
+
+                        (poli
+
+                         var
+
+                         (insertar-en-terminos
+
+                          terms
+
+                          coeficiente
+
+                          exponente)))))))))
+
 ```
 
 **Demostración por casos.** Cubra los tres casos del enunciado y
+
 verifique en cada uno las cuatro condiciones del invariante:
 
-- **Caso A — el exponente es nuevo.** {{Dónde queda el término
-  insertado y por qué el orden estricto se conserva. Qué pasa si el
-  coeficiente que llega es cero.}}
+- **Caso A — el exponente es nuevo.** El nuevo término se inserta antes
 
-- **Caso B — el exponente ya existía y la suma no es cero.** {{El
-  término se reemplaza por uno con el coeficiente sumado; el orden no
-  cambia porque el exponente es el mismo. Argumente que el coeficiente
-  resultante queda reducido y con denominador positivo.}}
+  del primer término cuyo exponente sea menor que $e$. Como los
 
-- **Caso C — el exponente ya existía y la suma es cero.** {{El término
-  desaparece. Argumente que quitarlo conserva el orden estricto y que
-  el resultado no queda con un cero, que es justo lo que exige la
-  segunda condición.}}
+  exponentes originales están en orden estrictamente decreciente, al
 
-**Terminación.** {{...}}
+  insertar $e$ en esta posición se conserva dicho orden.
 
-**Conclusión:** {{...}}
+  Si $e$ es mayor que el primer exponente, el nuevo término queda al
+
+  inicio. Si es menor que todos los exponentes existentes, queda al
+
+  final. En ambos casos se mantiene el orden estrictamente decreciente.
+
+  Además, si el coeficiente recibido es cero, la función retorna el
+
+  polinomio original sin modificarlo. Esto evita introducir un término
+
+  con coeficiente cero y, por tanto, conserva la segunda condición del
+
+  invariante.
+
+- **Caso B — el exponente ya existía y la suma no es cero.** Si ya
+
+  existe un término $(c,e)$ y se inserta otro coeficiente $c'$ con el
+
+  mismo exponente, la función calcula $c+c'$ y reemplaza el término por
+
+  $(c+c',e)$.
+
+  Como el exponente permanece igual, su posición dentro de la lista no
+
+  cambia y se conserva el orden estrictamente decreciente.
+
+  Si $c+c'\neq0$, tampoco se introduce un coeficiente cero. Además, los
+
+  coeficientes utilizados son racionales exactos y la función
+
+  `construir-coeficiente` obtiene el numerador y denominador del número
+
+  racional exacto. Por tanto, la representación conserva la forma
+
+  reducida y el denominador positivo.
+
+- **Caso C — el exponente ya existía y la suma es cero.** Si el
+
+  coeficiente existente y el nuevo coeficiente satisfacen
+
+  $c+c'=0$, la función elimina el término y retorna el resto de la
+
+  lista.
+
+  Al eliminar un término de una secuencia cuyos exponentes estaban en
+
+  orden estrictamente decreciente, los términos restantes mantienen
+
+  ese mismo orden. Además, el término con coeficiente cero no se
+
+  conserva en la representación, por lo que se mantiene la condición
+
+  de que todos los coeficientes sean diferentes de cero.
+
+**Terminación.** La medida utilizada es la cantidad de términos
+
+restantes:
+
+$$
+
+\mu(terms)=|terms|
+
+$$
+
+Cuando `insertar-en-terminos` necesita continuar la búsqueda, realiza
+
+la llamada recursiva sobre `resto`, por lo que:
+
+$$
+
+\mu(resto)=\mu(terms)-1
+
+$$
+
+La medida disminuye estrictamente en cada llamada recursiva y está
+
+acotada inferiormente por cero. Además, la función puede terminar antes
+
+de llegar al final cuando encuentra el exponente buscado o cuando
+
+encuentra la posición donde debe insertar el nuevo término.
+
+Por lo tanto, `insertar-termino` siempre termina.
+
+**Conclusión:** `insertar-termino` preserva el invariante del polinomio:
+
+mantiene los exponentes en orden estrictamente decreciente, no
+
+introduce exponentes negativos, no conserva coeficientes iguales a
+
+cero y mantiene los coeficientes racionales exactos en forma reducida.
+
+Por lo tanto, si $\mathrm{Inv}(p)$ se cumple antes de la inserción,
+
+también se cumple sobre el polinomio resultante.
 
 ---
 
 ## 3. Equivalencia de las dos representaciones
 
 Argumente por qué las funciones de la interfaz son las mismas para la
+
 representación basada en listas y la basada en procedimientos, y qué
+
 propiedad de la interfaz impide que el cliente las distinga. Basta una
+
 explicación conceptual apoyada en la sección 2.2 de EOPL, sin
+
 demostración formal.
 
 Conviene que la explicación responda a esto:
 
-- {{Qué ve el cliente de un polinomio: qué operaciones tiene
-  disponibles y qué no puede hacer.}}
-- {{Qué cambia entre las dos representaciones y por qué ese cambio
-  queda del lado de adentro de la interfaz.}}
-- {{Qué habría que hacer para que el cliente sí notara la diferencia,
-  y por qué eso significaría que la abstracción se rompió.}}
+- El cliente ve un polinomio únicamente a través de las operaciones
+
+  definidas por la interfaz del TAD, como `polinomio-cero`,
+
+  `insertar-termino`, `coeficiente-de` y `eliminar-termino`. El cliente
+
+  puede solicitar estas operaciones y utilizar sus resultados, pero no
+
+  necesita conocer ni modificar directamente la estructura interna del
+
+  polinomio.
+
+- En la representación basada en listas, los términos se almacenan
+
+  explícitamente como una estructura recursiva. En la representación
+
+  basada en procedimientos, la información se encapsula mediante
+
+  procedimientos que implementan las operaciones del TAD. Aunque cambia
+
+  la representación interna, ambas proporcionan las mismas operaciones
+
+  y comportamiento al cliente. Por eso el cambio permanece detrás de
+
+  la barrera de abstracción.
+
+- Para que el cliente notara la diferencia tendría que depender de la
+
+  representación interna, por ejemplo, utilizando directamente
+
+  operaciones específicas de listas como `car` y `cdr`, o dependiendo
+
+  de los procedimientos internos utilizados por la otra representación.
+
+  Esto rompería la barrera de abstracción porque el cliente dejaría de
+
+  depender únicamente de la interfaz del TAD.
 
 ---
 
 ## 4. Referencias
 
 - Friedman, D. P., & Wand, M. *Essentials of Programming Languages*,
+
   3.ª ed., MIT Press, 2008. Sección 2.1 (especificación de datos),
+
   sección 2.2 (representación basada en listas y basada en
+
   procedimientos), sección 2.4 (`define-datatype` y `cases`).
-- {{Otras referencias que hayan consultado.}}
