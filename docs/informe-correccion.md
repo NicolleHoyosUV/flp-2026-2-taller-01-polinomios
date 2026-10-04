@@ -8,13 +8,13 @@ de Programación — Universidad del Valle, Sede Tuluá.
 
 **Integrantes del grupo:**
 
-| Nombre | Código | Correo institucional |
 
-|--------|--------|----------------------|
-|Adriana Milena Noscue Dagua | 2477336 |adriana.noscue@correounivalle.edu.co |
-|Sebastian Cucalon Astorquiza| 2477344|sebastian.cucalon@correounivalle.edu.co |
-|Santiago Torres Rojas|2380301 |santiago.torres.rojas@correounivalle.edu.co |
-|Nicolle Camila Hoyos Puin|2380608 |nicolle.hoyos@correounivalle.edu.co |
+| Nombre | Código | Correo institucional |
+|---|---:|---|
+| Adriana Milena Noscue Dagua | 2477336 | adriana.noscue@correounivalle.edu.co |
+| Sebastian Cucalon Astorquiza | 2477344 | sebastian.cucalon@correounivalle.edu.co |
+| Santiago Torres Rojas | 2380301 | santiago.torres.rojas@correounivalle.edu.co |
+| Nicolle Camila Hoyos Puin | 2380608 | nicolle.hoyos@correounivalle.edu.co |
 
 ---
 
@@ -22,9 +22,7 @@ de Programación — Universidad del Valle, Sede Tuluá.
 
 ### 1.1 Corrección de programas recursivos
 
-Sea $f : A \to B$ una función y $A$ un conjunto definido
-
-recursivamente. Sea $P_f$ un programa recursivo en Racket que pretende
+Sea $f : A \to B$ una función y $A$ un conjunto definido recursivamente. Sea $P_f$ un programa recursivo en Racket que pretende 
 
 calcular $f$. Decimos que $P_f$ es correcto con respecto a su
 
@@ -50,21 +48,15 @@ Aquí $A$ es el conjunto de listas de términos que genera la gramática:
 
   lista y se demuestra $P_f(a) = f(a)$.
 
-Si alguna de sus funciones quedó escrita con un acumulador en lugar de
+Si alguna de sus funciones quedó escrita con un acumulador en lugar de recursión estructural, la corrección se argumenta con una invariante del acumulador y
 
-recursión estructural, la corrección se argumenta con una invariante
+no con la hipótesis de inducción: enuncie la invariante, demuestre que vale al inicio, que cada paso la conserva y que al terminar implica la post-
 
-del acumulador y no con la hipótesis de inducción: enuncie la
-
-invariante, demuestre que vale al inicio, que cada paso la conserva y
-
-que al terminar implica la post-condición.
+condición.
 
 ### 1.2 El invariante de la representación
 
-Las cuatro condiciones del enunciado se enuncian como una única
-
-propiedad sobre polinomios. Sea $p$ un polinomio con términos
+Las cuatro condiciones del enunciado se enuncian como una única propiedad sobre polinomios. Sea $p$ un polinomio con términos
 
 $t_1, t_2, \ldots, t_n$, donde $t_i = (c_i, e_i)$:
 
@@ -90,9 +82,7 @@ $$
 
 donde $\mathrm{red}\left(\frac{a}{b}\right)$ abrevia
 
-$b > 0 \,\land\, \mathrm{mcd}(|a|, b) = 1$, y un coeficiente entero se
-
-toma como el racional de denominador $1$.
+$b > 0 \,\land\, \mathrm{mcd}(|a|, b) = 1$, y un coeficiente entero se toma como el racional de denominador $1$.
 
 ---
 
@@ -108,9 +98,7 @@ toma como el racional de denominador $1$.
 
 - **Post-condición:** si el exponente $e$ aparece en $p$ asociado al
 
-coeficiente $c$, entonces $r=c$; si el exponente $e$ no aparece en $p$,
-
-la función levanta `eopl:error`.
+coeficiente $c$, entonces $r=c$; si el exponente $e$ no aparece en $p$, la función levanta `eopl:error`.
 
 **Código.**
 
